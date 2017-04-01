@@ -1,5 +1,5 @@
 module.exports = {
-    entry: './react-redux.js',
+    entry: './index.js',
 
     output: {
         filename: 'bundle.js',
