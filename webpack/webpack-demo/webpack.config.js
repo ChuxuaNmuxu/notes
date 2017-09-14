@@ -1,82 +1,59 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const webpack = require('webpack');
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
+module.exports = {
+    entry: {
+        app: path.resolve(__dirname, './src/index.js')
+    },
 
-const PATHS = {
-    app: path.join(__dirname, 'app'),
-    build: path.join(__dirname, 'build')
-}
+    output: {
+        filename: 'bundle.js',
+        path: path.resolve(__dirname, './dist')
+    },
 
-const plugin = new ExtractTextPlugin({
-    filename: '[name].css',
-});
+    devtool: 'inline-source-map', // source map
 
-const commonConfig = {
-        entry: {
-            app: PATHS.app
-        },
-        output: {
-            path: PATHS.build,
-            filename: '[name].js'
-        },
-        plugins: [
-            new HtmlWebpackPlugin({
-                title: 'webpack demo'
-            }),
-            plugin
-        ],
-        module: {
-            rules: [
-                {
-                    test: /\.css$/,
-                    use: plugin.extract({
-                        use: 'css-loader',
-                        fallback: 'style-loader',
-                    }),
-                },
-                {
-                    test: /\.js|jsx$/,
-                    exclude: /node_modules/,
-                    loader: 'babel-loader',
-                    options: {
-                            // Enable caching for improved performance during
-                            // development.
-                            // It uses default OS directory by default. If you need
-                            // something more custom, pass a path to it.
-                            // I.e., { cacheDirectory: '<path>' }
-                            cacheDirectory: true,
-                            presets: ['react', 'es2015'],
-                    },
-                },
-            ]
-        }
-}
+    /**
+     * 以下都是需要下载的
+     */
+    devServer: { // dev-server服务器
+        contentBase: './dist',
+        hot: true // 热加载
+    },
 
-const productionConfig = () => commonConfig;
+    plugins: [
+        new HtmlWebpackPlugin({ // 生成html，并自动引入js文件
+            title: 'output management'
+        }),
+        new CleanWebpackPlugin(['dist']), // 每次打包清理dist文件夹
+        new webpack.HotModuleReplacementPlugin(), // 热加载
+        new UglifyJSPlugin() // tree shaking 不加载没有使用的模块
+    ],
 
-const developConfig = () => {
-    const config = {
-        devServer: {
-            historyApiFallback: true,
-            stats: 'errors-only',
-            host: process.env.HOST,
-            port: process.env.PORT
-        }
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    'css-loader'
+                ]
+            },
+            {
+                test: /\.(png|jpg|gif|svg)$/,
+                use: [
+                    'file-loader'
+                ]
+            },
+            {
+                test: /\.(woff|woff2|eot|ttf|otf)$/,
+                use: [
+                    'file-loader'
+                ]
+            },
+        ]
     }
-
-    return Object.assign(
-        {},
-        commonConfig,
-        config
-    )
-}
-
-
-
-module.exports = (env) => {
-    if (env === 'production') {
-        return productionConfig();
-    }
-    return developConfig();
 }
