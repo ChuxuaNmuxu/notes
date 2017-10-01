@@ -1,4 +1,0 @@
-窗口焦点
-失去焦点： window.onblur / IE: document.onfocusout
-获得焦点： window.onfocus / IE: document.onfocusin
-

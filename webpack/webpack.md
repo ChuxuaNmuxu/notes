@@ -1,2 +1,0 @@
-loader: Loaders operate on module level. You use them to transform modules from shape to another.
-plugins: Plugins operate on a higher level. They provide the most powerful means to extend webpack and can also be used in tandem with loaders
