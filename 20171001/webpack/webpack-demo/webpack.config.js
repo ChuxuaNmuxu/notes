@@ -29,8 +29,8 @@ module.exports = {
             title: 'output management'
         }),
         new CleanWebpackPlugin(['dist']), // 每次打包清理dist文件夹
-        new webpack.HotModuleReplacementPlugin(), // 热加载
-        new UglifyJSPlugin() // tree shaking 不加载没有使用的模块
+        new webpack.HotModuleReplacementPlugin() // 热加载
+        // new UglifyJSPlugin() // tree shaking 不加载没有使用的模块
     ],
 
     module: {
