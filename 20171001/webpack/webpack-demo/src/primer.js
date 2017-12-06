@@ -130,10 +130,10 @@ function invoker (name, method) {
     return function (target) {
         if (!existy(target)) console.log('Must provide a target');
 
-        const targetMethod = target[method];
+        const targetMethod = target[name];
         const args = _.rest(arguments);
 
-        return doWhen((existy(targetMethod && method === targetMethod)), function () {
+        return doWhen((truthy(targetMethod && method === targetMethod)), function () {
             return targetMethod.apply(target, args);
         })
     }
@@ -242,3 +242,47 @@ function validator (message, fun) {
     f['message'] = message;
     return f;
 }
+
+console.log('******************* end of HOF ******************')
+
+/**
+ * 由函数构建函数
+ */
+
+/**
+ * 依次运行函数直至返回非undefined
+ */
+function dispatch () {
+    var funs = _.toArray(arguments);
+    var size = funs.length;
+
+    return function () {
+        var args = _.toArray(arguments)
+        var ret = undefined;
+
+        for (var i = 0; i < size; i++) {
+            var fun = funs[i];
+            ret = fun.apply(fun, args);
+
+            if (existy(ret)) return ret;
+        }
+
+        return ret;
+    }
+}
+
+var str = dispatch(invoker('toString', Array.prototype.toString), invoker('toString', String.prototype.toString));
+console.log(LOG_COUNT++, str('AI'), str(['a', 'i']))
+
+/**
+ * currying
+ */
+function rightAwayInvoker () {
+    var args = _.toArray(arguments);
+    var method = args.shift();
+    var target = args.shift();
+
+    return method.apply(target, args);
+}
+
+console.log(LOG_COUNT++, rightAwayInvoker(Array.prototype.reverse, [1, 2, 3], [3, 4]))
