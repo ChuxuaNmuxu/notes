@@ -236,7 +236,7 @@ console.log(LOG_COUNT++, alwaysFails({}))
 
 function validator (message, fun) {
     var f = function () {
-        return fn.apply(null, arguments);
+        return fun.apply(null, arguments);
     }
 
     f['message'] = message;
@@ -286,3 +286,79 @@ function rightAwayInvoker () {
 }
 
 console.log(LOG_COUNT++, rightAwayInvoker(Array.prototype.reverse, [1, 2, 3], [3, 4]))
+
+// 接受一个函数，返回一个只接受一个参数的函数
+function curry (fun) {
+    return function (arg) {
+        return fun(arg);
+    }
+}
+
+console.log(LOG_COUNT++, ['1', '11'].map(curry(parseInt)));
+
+function curry2 (fun) {
+    return function (secondArg) {
+        return function (firstArg) {
+            return fun(firstArg, secondArg);
+        }
+    }
+}
+
+// 柯里化流利的api
+var greaterThan = curry2(function (lhs, rhs) {return lhs > rhs});
+var lessThan = curry2(function (lhs, rhs) {return lhs < rhs});
+
+var withinRange = checker(
+    validator('greater than 10', greaterThan(10)),
+    validator('less than 20', lessThan(20))
+)
+console.log(LOG_COUNT++, withinRange(12), withinRange(45));
+
+//部分应用与柯里化
+function partial (fun) {
+    var pargs = _.rest(arguments);
+
+    return function () {
+        var args = cat(pargs, _.toArray(arguments));
+
+        return fun.apply(fun, args);
+    }
+}
+
+// 前置条件：函数的调用者的担保
+var zero = validator('cannot be zero', function (n) {return 0 === n});
+var number = validator('must be number', _.isNumber);
+
+function sqr (n) {
+    if (zero(n)) throw new Error(zero.message);
+    if (!number(n)) throw new Error(number.message);
+
+    return n * n;
+}
+
+console.log(LOG_COUNT++, sqr(3));
+
+function condition1 () {
+    var validators = _.toArray(arguments);
+
+    return function (fun, arg) {
+        var errors = mapcat(function (isValid) {
+            return isValid(arg) ? [] : [isValid.message];
+        }, validators);
+
+        if (!_.isEmpty(errors)) throw new Error(errors.join(', '));
+
+        return fun(arg);
+    }
+}
+
+var sqrPre = condition1(zero, number);
+
+// console.log(LOG_COUNT++, sqrPre(function () {return n * n}, 2));
+
+function uncheckedSqr (n) {
+    return n * n;
+}
+
+var checkedSqr = partial(sqrPre, uncheckedSqr);
+var sillySqr = partial(condition1(validator('should be string', _.isString)), checkedSqr);
