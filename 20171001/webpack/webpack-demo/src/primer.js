@@ -362,3 +362,24 @@ function uncheckedSqr (n) {
 
 var checkedSqr = partial(sqrPre, uncheckedSqr);
 var sillySqr = partial(condition1(validator('should be string', _.isString)), checkedSqr);
+
+
+/*
+    递归
+*/
+function andify () {
+    var preds = _.toArray(arguments);
+
+    return function () {
+        var args = _.toArray(arguments);
+
+        var everything = function (ps, truth) {
+            if (_.isEmpty(ps))
+                return truth;
+            else 
+                return _.every(args, _.first(ps)) && everything(_.rest(ps), truth)
+        }
+
+        return everything(preds, true);
+    }
+}
